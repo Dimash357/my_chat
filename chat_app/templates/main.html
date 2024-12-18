@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+    <h1>Welcome to {{ room_name }}!</h1>
+    <div id="chatbox" style="border: 1px solid black; height: 300px; overflow-y: scroll;"></div>
+
+    <!-- Ввод имени пользователя -->
+    <label for="username">Enter your name: </label>
+    <input type="text" id="username" placeholder="Your name" required>
+    <br><br>
+
+    <!-- Ввод сообщения -->
+    <input type="text" id="message" placeholder="Type a message..." required>
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+    const roomName = "{{ room_name }}";
+    const chatbox = document.getElementById("chatbox");
+    const usernameInput = document.getElementById("username");
+
+    const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/" + roomName + "/");
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const message = document.createElement("div");
+
+        // Отображаем сообщение с именем и временем
+        message.textContent = `[${data.timestamp || 'Now'}] ${data.username}: ${data.message}`;
+        chatbox.appendChild(message);
+    };
+
+    function sendMessage() {
+        const input = document.getElementById("message");
+        const username = usernameInput.value || "Anonymous";
+
+        socket.send(JSON.stringify({'username': username, 'message': input.value}));
+        input.value = "";
+    }
+</script>
+
+</body>
+</html>
